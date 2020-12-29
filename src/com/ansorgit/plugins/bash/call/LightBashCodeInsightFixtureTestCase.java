@@ -8,21 +8,6 @@ import java.io.IOException;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NonNls;
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 public abstract class LightBashCodeInsightFixtureTestCase
   extends LightPlatformCodeInsightFixtureTestCase
   implements BashTestCase

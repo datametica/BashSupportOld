@@ -12,22 +12,6 @@ import java.util.List;
 import junit.framework.AssertionFailedError;
 import org.jetbrains.annotations.NotNull;
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 public abstract class BashLightQuickfixParametrizedTest
   extends LightQuickFixParameterizedTestCase
 {

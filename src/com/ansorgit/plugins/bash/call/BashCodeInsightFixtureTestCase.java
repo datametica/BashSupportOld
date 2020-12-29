@@ -15,23 +15,6 @@ import com.intellij.testFramework.fixtures.TestFixtureBuilder;
 import java.io.File;
 import org.jetbrains.annotations.NonNls;
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 public abstract class BashCodeInsightFixtureTestCase<T extends ModuleFixtureBuilder>
   extends UsefulTestCase
 {

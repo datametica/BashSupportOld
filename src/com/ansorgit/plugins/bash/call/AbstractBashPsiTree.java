@@ -6,24 +6,6 @@ import com.intellij.psi.PsiFile;
 import java.io.IOException;
 import org.jetbrains.annotations.NotNull;
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 public abstract class AbstractBashPsiTree
   extends LightBashCodeInsightFixtureTestCase
 {
