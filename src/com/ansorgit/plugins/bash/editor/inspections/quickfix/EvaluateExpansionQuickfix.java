@@ -1,18 +1,3 @@
-/*
- * Copyright (c) Joachim Ansorg, mail@ansorg-it.com
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.ansorgit.plugins.bash.editor.inspections.quickfix;
 
 import com.ansorgit.plugins.bash.lang.psi.api.word.BashExpansion;
@@ -26,42 +11,57 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import org.jetbrains.annotations.NotNull;
 
-/**
- * Evaluates an expansion and replaces the placeholder with the evaluated result.
- * <br>
- * @author jansorg
- */
-public class EvaluateExpansionQuickfix extends AbstractBashPsiElementQuickfix {
-    private final boolean enableBash4;
-    private final String expansionDef;
 
-    public EvaluateExpansionQuickfix(BashExpansion expansion, boolean enableBash4) {
-        super(expansion);
-        this.enableBash4 = enableBash4;
-        this.expansionDef = expansion.getText();
-    }
 
-    @NotNull
-    public String getText() {
-        String replacement = ValueExpansionUtil.expand(expansionDef, enableBash4);
 
-        if (replacement.length() < 20) {
-            return "Replace with the result '" + replacement + "'";
-        }
 
-        return "Replace with evaluated expansion";
-    }
 
-    @Override
-    public void invoke(@NotNull Project project, @NotNull PsiFile file, Editor editor, @NotNull PsiElement startElement, @NotNull PsiElement endElement) {
-        TextRange r = startElement.getTextRange();
 
-        Document document = PsiDocumentManager.getInstance(project).getDocument(file);
 
-        String replacement = ValueExpansionUtil.expand(startElement.getText(), enableBash4);
-        if (replacement != null && document != null) {
-            editor.getDocument().replaceString(r.getStartOffset(), r.getEndOffset(), replacement);
-            PsiDocumentManager.getInstance(project).commitDocument(document);
-        }
-    }
+
+
+
+
+
+
+
+
+
+
+
+public class EvaluateExpansionQuickfix
+  extends AbstractBashPsiElementQuickfix
+{
+  private final boolean enableBash4;
+  private final String expansionDef;
+  
+  public EvaluateExpansionQuickfix(BashExpansion expansion, boolean enableBash4) {
+    super((PsiElement)expansion);
+    this.enableBash4 = enableBash4;
+    this.expansionDef = expansion.getText();
+  }
+  
+  @NotNull
+  public String getText() {
+    String replacement = ValueExpansionUtil.expand(this.expansionDef, this.enableBash4);
+    
+    if (replacement.length() < 20) {
+      if ("Replace with the result '" + replacement + "'" == null) throw new IllegalStateException(String.format("@NotNull method %s.%s must not return null", new Object[] { "com/ansorgit/plugins/bash/editor/inspections/quickfix/EvaluateExpansionQuickfix", "getText" }));  return "Replace with the result '" + replacement + "'";
+    } 
+    
+    if ("Replace with evaluated expansion" == null) throw new IllegalStateException(String.format("@NotNull method %s.%s must not return null", new Object[] { "com/ansorgit/plugins/bash/editor/inspections/quickfix/EvaluateExpansionQuickfix", "getText" }));  return "Replace with evaluated expansion";
+  }
+
+  
+  public void invoke(@NotNull Project project, @NotNull PsiFile file, Editor editor, @NotNull PsiElement startElement, @NotNull PsiElement endElement) {
+    if (project == null) throw new IllegalArgumentException(String.format("Argument for @NotNull parameter '%s' of %s.%s must not be null", new Object[] { "project", "com/ansorgit/plugins/bash/editor/inspections/quickfix/EvaluateExpansionQuickfix", "invoke" }));  if (file == null) throw new IllegalArgumentException(String.format("Argument for @NotNull parameter '%s' of %s.%s must not be null", new Object[] { "file", "com/ansorgit/plugins/bash/editor/inspections/quickfix/EvaluateExpansionQuickfix", "invoke" }));  if (startElement == null) throw new IllegalArgumentException(String.format("Argument for @NotNull parameter '%s' of %s.%s must not be null", new Object[] { "startElement", "com/ansorgit/plugins/bash/editor/inspections/quickfix/EvaluateExpansionQuickfix", "invoke" }));  if (endElement == null) throw new IllegalArgumentException(String.format("Argument for @NotNull parameter '%s' of %s.%s must not be null", new Object[] { "endElement", "com/ansorgit/plugins/bash/editor/inspections/quickfix/EvaluateExpansionQuickfix", "invoke" }));  TextRange r = startElement.getTextRange();
+    
+    Document document = PsiDocumentManager.getInstance(project).getDocument(file);
+    
+    String replacement = ValueExpansionUtil.expand(startElement.getText(), this.enableBash4);
+    if (replacement != null && document != null) {
+      editor.getDocument().replaceString(r.getStartOffset(), r.getEndOffset(), replacement);
+      PsiDocumentManager.getInstance(project).commitDocument(document);
+    } 
+  }
 }

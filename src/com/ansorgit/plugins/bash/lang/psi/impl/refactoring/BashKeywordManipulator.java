@@ -1,18 +1,3 @@
-/*
- * Copyright (c) Joachim Ansorg, mail@ansorg-it.com
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.ansorgit.plugins.bash.lang.psi.impl.refactoring;
 
 import com.ansorgit.plugins.bash.lang.psi.api.BashKeyword;
@@ -22,30 +7,45 @@ import com.intellij.psi.PsiElement;
 import com.intellij.util.IncorrectOperationException;
 import org.jetbrains.annotations.NotNull;
 
-/**
- * Element manipulator implementation for HereDoc content elements.
- *
- * @author jansorg
- */
-public class BashKeywordManipulator implements ElementManipulator<BashKeyword> {
-    @Override
-    public BashKeyword handleContentChange(@NotNull BashKeyword bashHereDoc, @NotNull TextRange textRange, String contentForRange) throws IncorrectOperationException {
-        throw new IncorrectOperationException();
-    }
 
-    @Override
-    public BashKeyword handleContentChange(@NotNull BashKeyword element, String newContent) throws IncorrectOperationException {
-        throw new IncorrectOperationException();
-    }
 
-    @NotNull
-    @Override
-    public TextRange getRangeInElement(@NotNull BashKeyword element) {
-        PsiElement keywordElement = element.keywordElement();
-        if (keywordElement == null) {
-            return TextRange.create(0, element.getTextLength());
-        }
 
-        return TextRange.create(0, keywordElement.getTextLength());
-    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+public class BashKeywordManipulator
+  implements ElementManipulator<BashKeyword>
+{
+  public BashKeyword handleContentChange(@NotNull BashKeyword bashHereDoc, @NotNull TextRange textRange, String contentForRange) throws IncorrectOperationException {
+    if (bashHereDoc == null) throw new IllegalArgumentException(String.format("Argument for @NotNull parameter '%s' of %s.%s must not be null", new Object[] { "bashHereDoc", "com/ansorgit/plugins/bash/lang/psi/impl/refactoring/BashKeywordManipulator", "handleContentChange" }));  if (textRange == null) throw new IllegalArgumentException(String.format("Argument for @NotNull parameter '%s' of %s.%s must not be null", new Object[] { "textRange", "com/ansorgit/plugins/bash/lang/psi/impl/refactoring/BashKeywordManipulator", "handleContentChange" }));  throw new IncorrectOperationException();
+  }
+
+  
+  public BashKeyword handleContentChange(@NotNull BashKeyword element, String newContent) throws IncorrectOperationException {
+    if (element == null) throw new IllegalArgumentException(String.format("Argument for @NotNull parameter '%s' of %s.%s must not be null", new Object[] { "element", "com/ansorgit/plugins/bash/lang/psi/impl/refactoring/BashKeywordManipulator", "handleContentChange" }));  throw new IncorrectOperationException();
+  }
+
+  
+  @NotNull
+  public TextRange getRangeInElement(@NotNull BashKeyword element) {
+    if (element == null) throw new IllegalArgumentException(String.format("Argument for @NotNull parameter '%s' of %s.%s must not be null", new Object[] { "element", "com/ansorgit/plugins/bash/lang/psi/impl/refactoring/BashKeywordManipulator", "getRangeInElement" }));  PsiElement keywordElement = element.keywordElement();
+    if (keywordElement == null) {
+      if (TextRange.create(0, element.getTextLength()) == null) throw new IllegalStateException(String.format("@NotNull method %s.%s must not return null", new Object[] { "com/ansorgit/plugins/bash/lang/psi/impl/refactoring/BashKeywordManipulator", "getRangeInElement" }));  return TextRange.create(0, element.getTextLength());
+    } 
+    
+    if (TextRange.create(0, keywordElement.getTextLength()) == null) throw new IllegalStateException(String.format("@NotNull method %s.%s must not return null", new Object[] { "com/ansorgit/plugins/bash/lang/psi/impl/refactoring/BashKeywordManipulator", "getRangeInElement" }));  return TextRange.create(0, keywordElement.getTextLength());
+  }
 }

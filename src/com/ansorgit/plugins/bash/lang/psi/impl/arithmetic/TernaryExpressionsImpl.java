@@ -1,18 +1,3 @@
-/*
- * Copyright (c) Joachim Ansorg, mail@ansorg-it.com
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.ansorgit.plugins.bash.lang.psi.impl.arithmetic;
 
 import com.ansorgit.plugins.bash.lang.psi.api.arithmetic.ArithmeticExpression;
@@ -22,72 +7,87 @@ import com.intellij.psi.tree.IElementType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-/**
- * @author jansorg
- */
-public class TernaryExpressionsImpl extends AbstractExpression implements TernaryExpression {
-    public TernaryExpressionsImpl(final ASTNode astNode) {
-        super(astNode, "ArithTernaryExpr", Type.Unsupported);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+public class TernaryExpressionsImpl
+  extends AbstractExpression
+  implements TernaryExpression
+{
+  public TernaryExpressionsImpl(ASTNode astNode) {
+    super(astNode, "ArithTernaryExpr", ArithmeticExpression.Type.Unsupported);
+  }
+  
+  @NotNull
+  public ArithmeticExpression findCondition() {
+    ArithmeticExpression[] firstChild = (ArithmeticExpression[])findChildrenByClass(ArithmeticExpression.class);
+    
+    if (firstChild[0] == null) throw new IllegalStateException(String.format("@NotNull method %s.%s must not return null", new Object[] { "com/ansorgit/plugins/bash/lang/psi/impl/arithmetic/TernaryExpressionsImpl", "findCondition" }));  return firstChild[0];
+  }
+  
+  @NotNull
+  public ArithmeticExpression findMainBranch() {
+    ArithmeticExpression[] firstChild = (ArithmeticExpression[])findChildrenByClass(ArithmeticExpression.class);
+    
+    if (firstChild[1] == null) throw new IllegalStateException(String.format("@NotNull method %s.%s must not return null", new Object[] { "com/ansorgit/plugins/bash/lang/psi/impl/arithmetic/TernaryExpressionsImpl", "findMainBranch" }));  return firstChild[1];
+  }
+  
+  @NotNull
+  public ArithmeticExpression findElseBranch() {
+    ArithmeticExpression[] firstChild = (ArithmeticExpression[])findChildrenByClass(ArithmeticExpression.class);
+    
+    if (firstChild[2] == null) throw new IllegalStateException(String.format("@NotNull method %s.%s must not return null", new Object[] { "com/ansorgit/plugins/bash/lang/psi/impl/arithmetic/TernaryExpressionsImpl", "findElseBranch" }));  return firstChild[2];
+  }
+
+  
+  public boolean isStatic() {
+    ArithmeticExpression condition = findCondition();
+    ArithmeticExpression mainBranch = findMainBranch();
+    ArithmeticExpression elseBranch = findElseBranch();
+    
+    if (condition.isStatic()) {
+      return (condition.computeNumericValue() != 0L) ? mainBranch.isStatic() : elseBranch.isStatic();
     }
 
-    @NotNull
-    public ArithmeticExpression findCondition() {
-        ArithmeticExpression[] firstChild = findChildrenByClass(ArithmeticExpression.class);
 
-        return firstChild[0];
-    }
+    
+    return (mainBranch.isStatic() && elseBranch
+      .isStatic() && mainBranch
+      .computeNumericValue() == elseBranch.computeNumericValue());
+  }
 
-    @NotNull
-    public ArithmeticExpression findMainBranch() {
-        ArithmeticExpression[] firstChild = findChildrenByClass(ArithmeticExpression.class);
 
-        return firstChild[1];
-    }
-
-    @NotNull
-    public ArithmeticExpression findElseBranch() {
-        ArithmeticExpression[] firstChild = findChildrenByClass(ArithmeticExpression.class);
-
-        return firstChild[2];
-    }
-
-    @Override
-    public boolean isStatic() {
-        ArithmeticExpression condition = findCondition();
-        ArithmeticExpression mainBranch = findMainBranch();
-        ArithmeticExpression elseBranch = findElseBranch();
-
-        if (condition.isStatic()) {
-            return condition.computeNumericValue() != 0 ? mainBranch.isStatic() : elseBranch.isStatic();
-        }
-
-        //although the condition may not be static the expression
-        //is still static if both branches are static and evaluate to the same numeric result
-        return mainBranch.isStatic()
-                && elseBranch.isStatic()
-                && mainBranch.computeNumericValue() == elseBranch.computeNumericValue();
-
-    }
-
-    @Override
-    public long computeNumericValue() {
-        ArithmeticExpression condition = findCondition();
-
-        if (condition.isStatic()) {
-            if (condition.computeNumericValue() != 0) {
-                return findMainBranch().computeNumericValue();
-            } else {
-                return findElseBranch().computeNumericValue();
-            }
-        }
-
-        //in this case we assume that both branche's values are equal
+  
+  public long computeNumericValue() {
+    ArithmeticExpression condition = findCondition();
+    
+    if (condition.isStatic()) {
+      if (condition.computeNumericValue() != 0L) {
         return findMainBranch().computeNumericValue();
-    }
+      }
+      return findElseBranch().computeNumericValue();
+    } 
 
-    @Nullable
-    @Override
-    protected Long compute(long currentValue, IElementType operator, Long nextExpressionValue) {
-        throw new UnsupportedOperationException("compute is unsupported in a ternary expression");
-    }
+
+    
+    return findMainBranch().computeNumericValue();
+  }
+
+  
+  @Nullable
+  protected Long compute(long currentValue, IElementType operator, Long nextExpressionValue) {
+    throw new UnsupportedOperationException("compute is unsupported in a ternary expression");
+  }
 }

@@ -1,89 +1,88 @@
-/*
- * Copyright (c) Joachim Ansorg, mail@ansorg-it.com
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.ansorgit.plugins.bash.editor.formatting.processor;
 
 import com.ansorgit.plugins.bash.editor.formatting.BashBlock;
 import com.ansorgit.plugins.bash.lang.lexer.BashTokenTypes;
 import com.ansorgit.plugins.bash.lang.parser.BashElementTypes;
-import com.ansorgit.plugins.bash.lang.psi.api.BashFile;
 import com.intellij.formatting.Indent;
 import com.intellij.lang.ASTNode;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.tree.IElementType;
 import com.intellij.psi.tree.TokenSet;
-import com.intellij.psi.util.PsiTreeUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-/**
- * This class is based on code taken from the Groovy plugin.
- *
- * @author ilyas, jansorg
- */
-public abstract class BashIndentProcessor implements BashElementTypes, BashTokenTypes {
-    private static final TokenSet BLOCKS = TokenSet.create(GROUP_COMMAND, GROUP_ELEMENT, CASE_PATTERN_LIST_ELEMENT, LOGICAL_BLOCK_ELEMENT);
 
-    /**
-     * Calculates indent, based on code style, between parent block and child node
-     *
-     * @param parent        parent block
-     * @param child         child node
-     * @param prevChildNode previous child node
-     * @return indent
-     */
-    @NotNull
-    public static Indent getChildIndent(@NotNull final BashBlock parent, @Nullable final ASTNode prevChildNode, @NotNull final ASTNode child) {
-        ASTNode node = parent.getNode();
-        IElementType nodeType = node.getElementType();
-        PsiElement psiElement = node.getPsi();
 
-        // For Bash file
-        if (psiElement instanceof BashFile) {
-            return Indent.getNoneIndent();
-        }
 
-        if (BLOCKS.contains(nodeType)) {
-            return indentForBlock(psiElement, child);
-        }
 
-        //subshell as function body
-        ASTNode parentNode = node.getTreeParent();
-        if (parentNode != null && parentNode.getElementType() == SUBSHELL_COMMAND) {
-            if (parentNode.getTreeParent() != null && parentNode.getTreeParent().getElementType() == FUNCTION_DEF_COMMAND) {
-                return Indent.getNormalIndent();
-            }
-        }
 
-        return Indent.getNoneIndent();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+public abstract class BashIndentProcessor
+  implements BashElementTypes, BashTokenTypes
+{
+  private static final TokenSet BLOCKS = TokenSet.create(new IElementType[] { GROUP_COMMAND, GROUP_ELEMENT, CASE_PATTERN_LIST_ELEMENT, LOGICAL_BLOCK_ELEMENT });
+
+
+
+
+
+
+
+
+  
+  @NotNull
+  public static Indent getChildIndent(@NotNull BashBlock parent, @Nullable ASTNode prevChildNode, @NotNull ASTNode child) {
+    if (parent == null) throw new IllegalArgumentException(String.format("Argument for @NotNull parameter '%s' of %s.%s must not be null", new Object[] { "parent", "com/ansorgit/plugins/bash/editor/formatting/processor/BashIndentProcessor", "getChildIndent" }));  if (child == null) throw new IllegalArgumentException(String.format("Argument for @NotNull parameter '%s' of %s.%s must not be null", new Object[] { "child", "com/ansorgit/plugins/bash/editor/formatting/processor/BashIndentProcessor", "getChildIndent" }));  ASTNode node = parent.getNode();
+    IElementType nodeType = node.getElementType();
+    PsiElement psiElement = node.getPsi();
+
+    
+    if (psiElement instanceof com.ansorgit.plugins.bash.lang.psi.api.BashFile) {
+      if (Indent.getNoneIndent() == null) throw new IllegalStateException(String.format("@NotNull method %s.%s must not return null", new Object[] { "com/ansorgit/plugins/bash/editor/formatting/processor/BashIndentProcessor", "getChildIndent" }));  return Indent.getNoneIndent();
+    } 
+    
+    if (BLOCKS.contains(nodeType)) {
+      if (indentForBlock(psiElement, child) == null) throw new IllegalStateException(String.format("@NotNull method %s.%s must not return null", new Object[] { "com/ansorgit/plugins/bash/editor/formatting/processor/BashIndentProcessor", "getChildIndent" }));  return indentForBlock(psiElement, child);
+    } 
+
+    
+    ASTNode parentNode = node.getTreeParent();
+    if (parentNode != null && parentNode.getElementType() == SUBSHELL_COMMAND && 
+      parentNode.getTreeParent() != null && parentNode.getTreeParent().getElementType() == FUNCTION_DEF_COMMAND) {
+      if (Indent.getNormalIndent() == null) throw new IllegalStateException(String.format("@NotNull method %s.%s must not return null", new Object[] { "com/ansorgit/plugins/bash/editor/formatting/processor/BashIndentProcessor", "getChildIndent" }));  return Indent.getNormalIndent();
+    } 
+
+    
+    if (Indent.getNoneIndent() == null) throw new IllegalStateException(String.format("@NotNull method %s.%s must not return null", new Object[] { "com/ansorgit/plugins/bash/editor/formatting/processor/BashIndentProcessor", "getChildIndent" }));  return Indent.getNoneIndent();
+  }
+
+
+
+
+
+
+
+
+  
+  private static Indent indentForBlock(PsiElement psiBlock, ASTNode child) {
+    if (LEFT_CURLY.equals(child.getElementType()) || RIGHT_CURLY.equals(child.getElementType())) {
+      return Indent.getNoneIndent();
     }
-
-
-    /**
-     * Indent for common block
-     *
-     * @param psiBlock
-     * @param child
-     * @return
-     */
-    private static Indent indentForBlock(PsiElement psiBlock, ASTNode child) {
-        if (LEFT_CURLY.equals(child.getElementType()) || RIGHT_CURLY.equals(child.getElementType())) {
-            return Indent.getNoneIndent();
-        }
-
-        return Indent.getNormalIndent();
-    }
+    
+    return Indent.getNormalIndent();
+  }
 }
-

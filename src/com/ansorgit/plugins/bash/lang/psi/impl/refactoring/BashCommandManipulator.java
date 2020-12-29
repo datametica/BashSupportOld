@@ -1,18 +1,3 @@
-/*
- * Copyright (c) Joachim Ansorg, mail@ansorg-it.com
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.ansorgit.plugins.bash.lang.psi.impl.refactoring;
 
 import com.ansorgit.plugins.bash.lang.psi.api.command.BashCommand;
@@ -26,40 +11,55 @@ import com.intellij.psi.PsiElement;
 import com.intellij.util.IncorrectOperationException;
 import org.jetbrains.annotations.NotNull;
 
-/**
- * Handles element manipulation of Bash function and file references.
- */
-public class BashCommandManipulator implements ElementManipulator<BashCommand> {
-    @Override
-    public BashCommand handleContentChange(@NotNull BashCommand cmd, @NotNull TextRange textRange, String newElementName) throws IncorrectOperationException {
-        if (StringUtil.isEmpty(newElementName)) {
-            throw new IncorrectOperationException("Can not handle empty names");
-        }
 
-        PsiElement commandElement = cmd.commandElement();
-        if (commandElement == null) {
-            throw new IncorrectOperationException("invalid command");
-        }
 
-        BashGenericCommand replacement = BashPsiElementFactory.createCommand(cmd.getProject(), newElementName);
-        BashPsiUtils.replaceElement(commandElement, replacement);
 
-        return cmd;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+public class BashCommandManipulator
+  implements ElementManipulator<BashCommand>
+{
+  public BashCommand handleContentChange(@NotNull BashCommand cmd, @NotNull TextRange textRange, String newElementName) throws IncorrectOperationException {
+    if (cmd == null) throw new IllegalArgumentException(String.format("Argument for @NotNull parameter '%s' of %s.%s must not be null", new Object[] { "cmd", "com/ansorgit/plugins/bash/lang/psi/impl/refactoring/BashCommandManipulator", "handleContentChange" }));  if (textRange == null) throw new IllegalArgumentException(String.format("Argument for @NotNull parameter '%s' of %s.%s must not be null", new Object[] { "textRange", "com/ansorgit/plugins/bash/lang/psi/impl/refactoring/BashCommandManipulator", "handleContentChange" }));  if (StringUtil.isEmpty(newElementName)) {
+      throw new IncorrectOperationException("Can not handle empty names");
     }
-
-    @Override
-    public BashCommand handleContentChange(@NotNull final BashCommand element, final String newContent) throws IncorrectOperationException {
-        return handleContentChange(element, TextRange.create(0, element.getTextLength()), newContent);
+    
+    PsiElement commandElement = cmd.commandElement();
+    if (commandElement == null) {
+      throw new IncorrectOperationException("invalid command");
     }
+    
+    BashGenericCommand replacement = BashPsiElementFactory.createCommand(cmd.getProject(), newElementName);
+    BashPsiUtils.replaceElement(commandElement, (PsiElement)replacement);
+    
+    return cmd;
+  }
 
-    @NotNull
-    @Override
-    public TextRange getRangeInElement(@NotNull BashCommand cmd) {
-        final PsiElement element = cmd.commandElement();
-        if (element == null) {
-            return TextRange.from(0, cmd.getTextLength());
-        }
+  
+  public BashCommand handleContentChange(@NotNull BashCommand element, String newContent) throws IncorrectOperationException {
+    if (element == null) throw new IllegalArgumentException(String.format("Argument for @NotNull parameter '%s' of %s.%s must not be null", new Object[] { "element", "com/ansorgit/plugins/bash/lang/psi/impl/refactoring/BashCommandManipulator", "handleContentChange" }));  return handleContentChange(element, TextRange.create(0, element.getTextLength()), newContent);
+  }
 
-        return TextRange.from(element.getStartOffsetInParent(), element.getTextLength());
-    }
+  
+  @NotNull
+  public TextRange getRangeInElement(@NotNull BashCommand cmd) {
+    if (cmd == null) throw new IllegalArgumentException(String.format("Argument for @NotNull parameter '%s' of %s.%s must not be null", new Object[] { "cmd", "com/ansorgit/plugins/bash/lang/psi/impl/refactoring/BashCommandManipulator", "getRangeInElement" }));  PsiElement element = cmd.commandElement();
+    if (element == null) {
+      if (TextRange.from(0, cmd.getTextLength()) == null) throw new IllegalStateException(String.format("@NotNull method %s.%s must not return null", new Object[] { "com/ansorgit/plugins/bash/lang/psi/impl/refactoring/BashCommandManipulator", "getRangeInElement" }));  return TextRange.from(0, cmd.getTextLength());
+    } 
+    
+    if (TextRange.from(element.getStartOffsetInParent(), element.getTextLength()) == null) throw new IllegalStateException(String.format("@NotNull method %s.%s must not return null", new Object[] { "com/ansorgit/plugins/bash/lang/psi/impl/refactoring/BashCommandManipulator", "getRangeInElement" }));  return TextRange.from(element.getStartOffsetInParent(), element.getTextLength());
+  }
 }

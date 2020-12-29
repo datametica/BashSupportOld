@@ -1,21 +1,3 @@
-/*
- * Copyright (c) Joachim Ansorg, mail@ansorg-it.com
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-/*
- */
-
 package com.ansorgit.plugins.bash.editor.inspections.quickfix;
 
 import com.ansorgit.plugins.bash.lang.psi.api.vars.BashVar;
@@ -25,6 +7,7 @@ import com.intellij.openapi.command.CommandProcessor;
 import com.intellij.openapi.command.UndoConfirmationPolicy;
 import com.intellij.openapi.command.undo.GlobalUndoableAction;
 import com.intellij.openapi.command.undo.UndoManager;
+import com.intellij.openapi.command.undo.UndoableAction;
 import com.intellij.openapi.command.undo.UnexpectedUndoException;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.fileEditor.FileEditorManager;
@@ -33,86 +16,103 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.util.FileContentUtil;
+import java.util.Collections;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Collections;
 
-/**
- * Quickfix to register an unknown / unresolved variable as a globally defined variable.
- * <br>
- *
- * @author jansorg
- */
-public class GlobalVariableQuickfix extends AbstractBashPsiElementQuickfix {
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+public class GlobalVariableQuickfix
+  extends AbstractBashPsiElementQuickfix
+{
+  private final boolean register;
+  
+  public GlobalVariableQuickfix(BashVar bashVar, boolean register) {
+    super((PsiElement)bashVar);
+    this.register = register;
+  }
+  
+  @NotNull
+  public String getText() {
+    if ((this.register ? "Register as global variable" : "Unregister as global variable") == null) throw new IllegalStateException(String.format("@NotNull method %s.%s must not return null", new Object[] { "com/ansorgit/plugins/bash/editor/inspections/quickfix/GlobalVariableQuickfix", "getText" }));  return this.register ? "Register as global variable" : "Unregister as global variable";
+  }
+
+  
+  public boolean startInWriteAction() {
+    return false;
+  }
+
+  
+  public void invoke(@NotNull Project project, @NotNull PsiFile file, Editor editor, @NotNull PsiElement startElement, @NotNull PsiElement endElement) {
+    if (project == null) throw new IllegalArgumentException(String.format("Argument for @NotNull parameter '%s' of %s.%s must not be null", new Object[] { "project", "com/ansorgit/plugins/bash/editor/inspections/quickfix/GlobalVariableQuickfix", "invoke" }));  if (file == null) throw new IllegalArgumentException(String.format("Argument for @NotNull parameter '%s' of %s.%s must not be null", new Object[] { "file", "com/ansorgit/plugins/bash/editor/inspections/quickfix/GlobalVariableQuickfix", "invoke" }));  if (startElement == null) throw new IllegalArgumentException(String.format("Argument for @NotNull parameter '%s' of %s.%s must not be null", new Object[] { "startElement", "com/ansorgit/plugins/bash/editor/inspections/quickfix/GlobalVariableQuickfix", "invoke" }));  if (endElement == null) throw new IllegalArgumentException(String.format("Argument for @NotNull parameter '%s' of %s.%s must not be null", new Object[] { "endElement", "com/ansorgit/plugins/bash/editor/inspections/quickfix/GlobalVariableQuickfix", "invoke" }));  BashVar variable = (BashVar)startElement;
+    String variableName = variable.getReference().getReferencedName();
+    
+    UndoConfirmationPolicy mode = ApplicationManager.getApplication().isUnitTestMode() ? UndoConfirmationPolicy.DO_NOT_REQUEST_CONFIRMATION : UndoConfirmationPolicy.DEFAULT;
+
+
+    
+    CommandProcessor.getInstance().executeCommand(project, new GlobalVarRegistryAction(project, variableName, this.register), getText(), null, mode);
+  }
+
+  
+  private static class GlobalVarRegistryAction
+    implements Runnable
+  {
+    private final Project project;
+    private final String variableName;
     private final boolean register;
-
-    public GlobalVariableQuickfix(BashVar bashVar, boolean register) {
-        super(bashVar);
-        this.register = register;
+    
+    public GlobalVarRegistryAction(Project project, String variableName, boolean register) {
+      this.project = project;
+      this.variableName = variableName;
+      this.register = register;
     }
-
-    @NotNull
-    public String getText() {
-        return register ? "Register as global variable" : "Unregister as global variable";
+    
+    private void doRegistryAction(boolean register) {
+      if (register) {
+        BashProjectSettings.storedSettings(this.project).addGlobalVariable(this.variableName);
+      } else {
+        BashProjectSettings.storedSettings(this.project).removeGlobalVariable(this.variableName);
+      } 
+      
+      FileContentUtil.reparseFiles(this.project, Collections.emptyList(), true);
     }
-
-    @Override
-    public boolean startInWriteAction() {
-        return false;
-    }
-
-    @Override
-    public void invoke(@NotNull Project project, @NotNull final PsiFile file, Editor editor, @NotNull PsiElement startElement, @NotNull PsiElement endElement) {
-        BashVar variable = (BashVar) startElement;
-        String variableName = variable.getReference().getReferencedName();
-
-        UndoConfirmationPolicy mode = ApplicationManager.getApplication().isUnitTestMode()
-                ? UndoConfirmationPolicy.DO_NOT_REQUEST_CONFIRMATION
-                : UndoConfirmationPolicy.DEFAULT;
-
-        CommandProcessor.getInstance().executeCommand(project, new GlobalVarRegistryAction(project, variableName, register), getText(), null, mode);
-    }
-
-    /**
-     * This class handles the registry action and adds an undo/redo step.
-     */
-    private static class GlobalVarRegistryAction implements Runnable {
-        private final Project project;
-        private final String variableName;
-        private final boolean register;
-
-        public GlobalVarRegistryAction(Project project, String variableName, boolean register) {
-            this.project = project;
-            this.variableName = variableName;
-            this.register = register;
-        }
-
-        private void doRegistryAction(boolean register) {
-            if (register) {
-                BashProjectSettings.storedSettings(project).addGlobalVariable(variableName);
-            } else {
-                BashProjectSettings.storedSettings(project).removeGlobalVariable(variableName);
+    
+    public void run() {
+      VirtualFile[] openFiles = FileEditorManager.getInstance(this.project).getOpenFiles();
+      
+      UndoManager.getInstance(this.project).undoableActionPerformed((UndoableAction)new GlobalUndoableAction(openFiles)
+          {
+            public void undo() throws UnexpectedUndoException {
+              GlobalVariableQuickfix.GlobalVarRegistryAction.this.doRegistryAction(!GlobalVariableQuickfix.GlobalVarRegistryAction.this.register);
             }
 
-            FileContentUtil.reparseFiles(project, Collections.emptyList(), true);
-        }
-
-        public void run() {
-            VirtualFile[] openFiles = FileEditorManager.getInstance(project).getOpenFiles();
-
-            UndoManager.getInstance(project).undoableActionPerformed(new GlobalUndoableAction(openFiles) {
-                @Override
-                public void undo() throws UnexpectedUndoException {
-                    doRegistryAction(!register);
-                }
-
-                @Override
-                public void redo() throws UnexpectedUndoException {
-                    doRegistryAction(register);
-                }
-            });
-
-            doRegistryAction(register);
-        }
+            
+            public void redo() throws UnexpectedUndoException {
+              GlobalVariableQuickfix.GlobalVarRegistryAction.this.doRegistryAction(GlobalVariableQuickfix.GlobalVarRegistryAction.this.register);
+            }
+          });
+      
+      doRegistryAction(this.register);
     }
+  }
 }

@@ -1,18 +1,3 @@
-/*
- * Copyright (c) Joachim Ansorg, mail@ansorg-it.com
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.ansorgit.plugins.bash.lang.parser;
 
 import com.ansorgit.plugins.bash.lang.BashVersion;
@@ -34,103 +19,118 @@ import com.intellij.psi.tree.IFileElementType;
 import com.intellij.psi.tree.TokenSet;
 import org.jetbrains.annotations.NotNull;
 
-/**
- * Defines the implementation of the Bash parser. This is  the starting point for the parse.
- * This class is referenced in the plugin.xml file.
- *
- * @author jansorg
- */
-public class BashParserDefinition implements ParserDefinition, BashElementTypes {
-    // These tokens are used e.g. during the "find references in strings" search
-    private static final TokenSet stringLiterals = TokenSet.create(BashTokenTypes.STRING2, BashTokenTypes.INTEGER_LITERAL, BashTokenTypes.COLON, BashElementTypes.STRING_ELEMENT);
 
-    @NotNull
-    public Lexer createLexer(Project project) {
-        return createBashLexer(project);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+public class BashParserDefinition
+  implements ParserDefinition, BashElementTypes
+{
+  private static final TokenSet stringLiterals = TokenSet.create(new IElementType[] { BashTokenTypes.STRING2, BashTokenTypes.INTEGER_LITERAL, BashTokenTypes.COLON, BashElementTypes.STRING_ELEMENT });
+  
+  @NotNull
+  public Lexer createLexer(Project project) {
+    if (createBashLexer(project) == null) throw new IllegalStateException(String.format("@NotNull method %s.%s must not return null", new Object[] { "com/ansorgit/plugins/bash/lang/parser/BashParserDefinition", "createLexer" }));  return createBashLexer(project);
+  }
+  
+  public static Lexer createBashLexer(Project project) {
+    return (Lexer)new BashLexer(findLanguageLevel(project));
+  }
+  
+  public PsiParser createParser(Project project) {
+    return new BashParser(project, findLanguageLevel(project));
+  }
+  
+  private static BashVersion findLanguageLevel(Project project) {
+    boolean supportBash4 = BashProjectSettings.storedSettings(project).isSupportBash4();
+    return supportBash4 ? BashVersion.Bash_v4 : BashVersion.Bash_v3;
+  }
+  
+  public IFileElementType getFileNodeType() {
+    return (IFileElementType)FILE;
+  }
+  
+  @NotNull
+  public TokenSet getWhitespaceTokens() {
+    if (BashTokenTypes.whitespaceTokens == null) throw new IllegalStateException(String.format("@NotNull method %s.%s must not return null", new Object[] { "com/ansorgit/plugins/bash/lang/parser/BashParserDefinition", "getWhitespaceTokens" }));  return BashTokenTypes.whitespaceTokens;
+  }
+  
+  @NotNull
+  public TokenSet getCommentTokens() {
+    if (BashTokenTypes.commentTokens == null) throw new IllegalStateException(String.format("@NotNull method %s.%s must not return null", new Object[] { "com/ansorgit/plugins/bash/lang/parser/BashParserDefinition", "getCommentTokens" }));  return BashTokenTypes.commentTokens;
+  }
+  
+  @NotNull
+  public TokenSet getStringLiteralElements() {
+    if (stringLiterals == null) throw new IllegalStateException(String.format("@NotNull method %s.%s must not return null", new Object[] { "com/ansorgit/plugins/bash/lang/parser/BashParserDefinition", "getStringLiteralElements" }));  return stringLiterals;
+  }
+  
+  private static final TokenSet heredocTokens = TokenSet.create(new IElementType[] { BashTokenTypes.HEREDOC_CONTENT, BashTokenTypes.HEREDOC_MARKER_START, BashTokenTypes.HEREDOC_MARKER_END, BashTokenTypes.HEREDOC_MARKER_IGNORING_TABS_END });
+
+  
+  public ParserDefinition.SpaceRequirements spaceExistanceTypeBetweenTokens(ASTNode leftAst, ASTNode rightAst) {
+    IElementType left = leftAst.getElementType();
+    IElementType right = rightAst.getElementType();
+    
+    if (left == BashTokenTypes.LINE_FEED || right == BashTokenTypes.LINE_FEED || left == BashTokenTypes.ASSIGNMENT_WORD)
+    {
+      
+      return ParserDefinition.SpaceRequirements.MUST_NOT;
     }
 
-    public static Lexer createBashLexer(Project project) {
-        return new BashLexer(findLanguageLevel(project));
+    
+    if (heredocTokens.contains(left) || heredocTokens.contains(right)) {
+      return ParserDefinition.SpaceRequirements.MUST_NOT;
     }
+    
+    if (left == BashTokenTypes.LEFT_PAREN || right == BashTokenTypes.RIGHT_PAREN || left == BashTokenTypes.RIGHT_PAREN || right == BashTokenTypes.LEFT_PAREN || left == BashTokenTypes.LEFT_CURLY || right == BashTokenTypes.LEFT_CURLY || left == BashTokenTypes.RIGHT_CURLY || right == BashTokenTypes.RIGHT_CURLY || (left == BashTokenTypes.WORD && right == BashTokenTypes.PARAM_EXPANSION_OP_UNKNOWN) || left == BashTokenTypes.LEFT_SQUARE || right == BashTokenTypes.RIGHT_SQUARE || left == BashTokenTypes.RIGHT_SQUARE || right == BashTokenTypes.LEFT_SQUARE || left == BashTokenTypes.VARIABLE || right == BashTokenTypes.VARIABLE)
+    {
 
-    public PsiParser createParser(Project project) {
-        return new BashParser(project, findLanguageLevel(project));
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      
+      return ParserDefinition.SpaceRequirements.MAY;
     }
-
-    private static BashVersion findLanguageLevel(Project project) {
-        boolean supportBash4 = BashProjectSettings.storedSettings(project).isSupportBash4();
-        return supportBash4 ? BashVersion.Bash_v4 : BashVersion.Bash_v3;
-    }
-
-    public IFileElementType getFileNodeType() {
-        return FILE;
-    }
-
-    @NotNull
-    public TokenSet getWhitespaceTokens() {
-        return BashTokenTypes.whitespaceTokens;
-    }
-
-    @NotNull
-    public TokenSet getCommentTokens() {
-        return BashTokenTypes.commentTokens;
-    }
-
-    @NotNull
-    public TokenSet getStringLiteralElements() {
-        return stringLiterals;
-    }
-
-    private static final TokenSet heredocTokens = TokenSet.create(BashTokenTypes.HEREDOC_CONTENT,
-            BashTokenTypes.HEREDOC_MARKER_START, BashTokenTypes.HEREDOC_MARKER_END, BashTokenTypes.HEREDOC_MARKER_IGNORING_TABS_END);
-
-    public SpaceRequirements spaceExistanceTypeBetweenTokens(ASTNode leftAst, ASTNode rightAst) {
-        final IElementType left = leftAst.getElementType();
-        final IElementType right = rightAst.getElementType();
-
-        if (left == BashTokenTypes.LINE_FEED
-                || right == BashTokenTypes.LINE_FEED
-                || left == BashTokenTypes.ASSIGNMENT_WORD) {
-            return SpaceRequirements.MUST_NOT;
-        }
-
-        //heredoc
-        if (heredocTokens.contains(left) || heredocTokens.contains(right)) {
-            return SpaceRequirements.MUST_NOT;
-        }
-
-        if (left == BashTokenTypes.LEFT_PAREN
-                || right == BashTokenTypes.RIGHT_PAREN
-                || left == BashTokenTypes.RIGHT_PAREN
-                || right == BashTokenTypes.LEFT_PAREN
-
-                || left == BashTokenTypes.LEFT_CURLY
-                || right == BashTokenTypes.LEFT_CURLY
-                || left == BashTokenTypes.RIGHT_CURLY
-                || right == BashTokenTypes.RIGHT_CURLY
-
-                || (left == BashTokenTypes.WORD && right == BashTokenTypes.PARAM_EXPANSION_OP_UNKNOWN)
-
-                || left == BashTokenTypes.LEFT_SQUARE
-                || right == BashTokenTypes.RIGHT_SQUARE
-                || left == BashTokenTypes.RIGHT_SQUARE
-                || right == BashTokenTypes.LEFT_SQUARE
-
-                || left == BashTokenTypes.VARIABLE
-                || right == BashTokenTypes.VARIABLE) {
-
-            return SpaceRequirements.MAY;
-        }
-
-        return SpaceRequirements.MUST;
-    }
-
-    @NotNull
-    public PsiElement createElement(ASTNode node) {
-        return BashPsiCreator.createElement(node);
-    }
-
-    public PsiFile createFile(FileViewProvider viewProvider) {
-        return new BashFileImpl(viewProvider);
-    }
+    
+    return ParserDefinition.SpaceRequirements.MUST;
+  }
+  
+  @NotNull
+  public PsiElement createElement(ASTNode node) {
+    if (BashPsiCreator.createElement(node) == null) throw new IllegalStateException(String.format("@NotNull method %s.%s must not return null", new Object[] { "com/ansorgit/plugins/bash/lang/parser/BashParserDefinition", "createElement" }));  return BashPsiCreator.createElement(node);
+  }
+  
+  public PsiFile createFile(FileViewProvider viewProvider) {
+    return (PsiFile)new BashFileImpl(viewProvider);
+  }
 }

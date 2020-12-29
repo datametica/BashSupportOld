@@ -1,18 +1,3 @@
-/*
- * Copyright (c) Joachim Ansorg, mail@ansorg-it.com
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.ansorgit.plugins.bash.runner.terminal;
 
 import com.ansorgit.plugins.bash.runner.BashRunConfigUtil;
@@ -31,57 +16,72 @@ import com.intellij.openapi.actionSystem.AnAction;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-class BashTerminalCommandLineState extends CommandLineState {
-    private final BashRunConfiguration runConfig;
 
-    BashTerminalCommandLineState(BashRunConfiguration runConfig, ExecutionEnvironment environment) {
-        super(environment);
-        this.runConfig = runConfig;
+
+
+
+
+
+
+
+
+
+
+
+
+class BashTerminalCommandLineState
+  extends CommandLineState
+{
+  private final BashRunConfiguration runConfig;
+  
+  BashTerminalCommandLineState(BashRunConfiguration runConfig, ExecutionEnvironment environment) {
+    super(environment);
+    this.runConfig = runConfig;
+  }
+
+  
+  @NotNull
+  public ExecutionResult execute(@NotNull Executor executor, @NotNull ProgramRunner runner) throws ExecutionException {
+    if (executor == null) throw new IllegalArgumentException(String.format("Argument for @NotNull parameter '%s' of %s.%s must not be null", new Object[] { "executor", "com/ansorgit/plugins/bash/runner/terminal/BashTerminalCommandLineState", "execute" }));  if (runner == null) throw new IllegalArgumentException(String.format("Argument for @NotNull parameter '%s' of %s.%s must not be null", new Object[] { "runner", "com/ansorgit/plugins/bash/runner/terminal/BashTerminalCommandLineState", "execute" }));  String workingDir = BashRunConfigUtil.findWorkingDir(this.runConfig);
+    GeneralCommandLine cmd = BashRunConfigUtil.createCommandLine(workingDir, this.runConfig);
+    
+    BashLocalTerminalRunner myRunner = new BashLocalTerminalRunner(this.runConfig.getProject(), this.runConfig.getScriptName(), cmd);
+    myRunner.run();
+    if (new BashTerminalExecutionResult(myRunner.getProcessHandler()) == null) throw new IllegalStateException(String.format("@NotNull method %s.%s must not return null", new Object[] { "com/ansorgit/plugins/bash/runner/terminal/BashTerminalCommandLineState", "execute" }));  return new BashTerminalExecutionResult(myRunner.getProcessHandler());
+  }
+
+  
+  @Nullable
+  protected ConsoleView createConsole(@NotNull Executor executor) throws ExecutionException {
+    if (executor == null) throw new IllegalArgumentException(String.format("Argument for @NotNull parameter '%s' of %s.%s must not be null", new Object[] { "executor", "com/ansorgit/plugins/bash/runner/terminal/BashTerminalCommandLineState", "createConsole" }));  return null;
+  }
+
+  
+  @NotNull
+  protected ProcessHandler startProcess() throws ExecutionException {
+    throw new UnsupportedOperationException("not supported by terminal implementation");
+  }
+  
+  private static class BashTerminalExecutionResult implements ExecutionResult {
+    private final ProcessHandler processHandler;
+    
+    public BashTerminalExecutionResult(ProcessHandler processHandler) {
+      this.processHandler = processHandler;
     }
 
-    @NotNull
-    @Override
-    public ExecutionResult execute(@NotNull Executor executor, @NotNull ProgramRunner runner) throws ExecutionException {
-        String workingDir = BashRunConfigUtil.findWorkingDir(runConfig);
-        GeneralCommandLine cmd = BashRunConfigUtil.createCommandLine(workingDir, runConfig);
-
-        BashLocalTerminalRunner myRunner = new BashLocalTerminalRunner(runConfig.getProject(), runConfig.getScriptName(), cmd);
-        myRunner.run();
-        return new BashTerminalExecutionResult(myRunner.getProcessHandler());
+    
+    public ExecutionConsole getExecutionConsole() {
+      return null;
     }
 
-    @Nullable
-    @Override
-    protected ConsoleView createConsole(@NotNull Executor executor) throws ExecutionException {
-        return null;
+    
+    public AnAction[] getActions() {
+      return new AnAction[0];
     }
 
-    @NotNull
-    @Override
-    protected ProcessHandler startProcess() throws ExecutionException {
-        throw new UnsupportedOperationException("not supported by terminal implementation");
+    
+    public ProcessHandler getProcessHandler() {
+      return this.processHandler;
     }
-
-    private static class BashTerminalExecutionResult implements ExecutionResult {
-        private final ProcessHandler processHandler;
-
-        public BashTerminalExecutionResult(ProcessHandler processHandler) {
-            this.processHandler = processHandler;
-        }
-
-        @Override
-        public ExecutionConsole getExecutionConsole() {
-            return null;
-        }
-
-        @Override
-        public AnAction[] getActions() {
-            return new AnAction[0];
-        }
-
-        @Override
-        public ProcessHandler getProcessHandler() {
-            return processHandler;
-        }
-    }
+  }
 }

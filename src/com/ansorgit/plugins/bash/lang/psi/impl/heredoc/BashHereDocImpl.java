@@ -1,18 +1,3 @@
-/*
- * Copyright (c) Joachim Ansorg, mail@ansorg-it.com
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.ansorgit.plugins.bash.lang.psi.impl.heredoc;
 
 import com.ansorgit.plugins.bash.lang.lexer.BashTokenTypes;
@@ -30,87 +15,102 @@ import com.intellij.psi.impl.source.tree.LeafElement;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-/**
- * @author jansorg
- */
-public class BashHereDocImpl extends BashBaseElement implements BashHereDoc, PsiLanguageInjectionHost {
-    public BashHereDocImpl(ASTNode astNode) {
-        super(astNode, "bash here doc");
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+public class BashHereDocImpl
+  extends BashBaseElement
+  implements BashHereDoc, PsiLanguageInjectionHost
+{
+  public BashHereDocImpl(ASTNode astNode) {
+    super(astNode, "bash here doc");
+  }
+
+  
+  public void accept(@NotNull PsiElementVisitor visitor) {
+    if (visitor == null) throw new IllegalArgumentException(String.format("Argument for @NotNull parameter '%s' of %s.%s must not be null", new Object[] { "visitor", "com/ansorgit/plugins/bash/lang/psi/impl/heredoc/BashHereDocImpl", "accept" }));  if (visitor instanceof BashVisitor) {
+      ((BashVisitor)visitor).visitHereDoc(this);
+    } else {
+      visitor.visitElement((PsiElement)this);
+    } 
+  }
+  
+  @Nullable
+  private PsiElement findRedirectElement() {
+    BashHereDocStartMarker start = findStartMarkerElement();
+    if (start == null) {
+      return null;
     }
-
-    @Override
-    public void accept(@NotNull PsiElementVisitor visitor) {
-        if (visitor instanceof BashVisitor) {
-            ((BashVisitor) visitor).visitHereDoc(this);
-        } else {
-            visitor.visitElement(this);
-        }
+    
+    for (PsiElement sibling = start.getPrevSibling(); sibling != null; sibling = sibling.getPrevSibling()) {
+      if (sibling.getNode().getElementType() == BashTokenTypes.HEREDOC_MARKER_TAG) {
+        return sibling;
+      }
+    } 
+    
+    return null;
+  }
+  
+  @Nullable
+  private BashHereDocStartMarker findStartMarkerElement() {
+    BashHereDocEndMarker end = findEndMarkerElement();
+    if (end == null || end.getReference() == null) {
+      return null;
     }
-
-    @Nullable
-    private PsiElement findRedirectElement() {
-        BashHereDocStartMarker start = findStartMarkerElement();
-        if (start == null) {
-            return null;
-        }
-
-        for (PsiElement sibling = start.getPrevSibling(); sibling != null; sibling = sibling.getPrevSibling()) {
-            if (sibling.getNode().getElementType() == BashTokenTypes.HEREDOC_MARKER_TAG) {
-                return sibling;
-            }
-        }
-
-        return null;
+    
+    PsiElement start = end.getReference().resolve();
+    if (start instanceof BashHereDocStartMarker) {
+      return (BashHereDocStartMarker)start;
     }
+    
+    return null;
+  }
+  
+  @Nullable
+  private BashHereDocEndMarker findEndMarkerElement() {
+    PsiElement last = getNextSibling();
+    return (last instanceof BashHereDocEndMarker) ? (BashHereDocEndMarker)last : null;
+  }
+  
+  public boolean isEvaluatingVariables() {
+    BashHereDocStartMarker start = findStartMarkerElement();
+    return (start != null && start.isEvaluatingVariables());
+  }
+  
+  public boolean isStrippingLeadingWhitespace() {
+    PsiElement redirectElement = findRedirectElement();
+    
+    return (redirectElement != null && "<<-".equals(redirectElement.getText()));
+  }
 
-    @Nullable
-    private BashHereDocStartMarker findStartMarkerElement() {
-        BashHereDocEndMarker end = findEndMarkerElement();
-        if (end == null || end.getReference() == null) {
-            return null;
-        }
+  
+  public boolean isValidHost() {
+    return !isEvaluatingVariables();
+  }
 
-        PsiElement start = end.getReference().resolve();
-        if (start instanceof BashHereDocStartMarker) {
-            return (BashHereDocStartMarker) start;
-        }
+  
+  public PsiLanguageInjectionHost updateText(@NotNull String text) {
+    if (text == null) throw new IllegalArgumentException(String.format("Argument for @NotNull parameter '%s' of %s.%s must not be null", new Object[] { "text", "com/ansorgit/plugins/bash/lang/psi/impl/heredoc/BashHereDocImpl", "updateText" }));  ASTNode valueNode = getNode().getFirstChildNode();
+    assert valueNode instanceof LeafElement;
+    ((LeafElement)valueNode).replaceWithText(text);
+    return this;
+  }
 
-        return null;
-    }
-
-    @Nullable
-    private BashHereDocEndMarker findEndMarkerElement() {
-        PsiElement last = getNextSibling();
-        return last instanceof BashHereDocEndMarker ? (BashHereDocEndMarker) last : null;
-    }
-
-    public boolean isEvaluatingVariables() {
-        BashHereDocStartMarker start = findStartMarkerElement();
-        return (start != null) && start.isEvaluatingVariables();
-    }
-
-    public boolean isStrippingLeadingWhitespace() {
-        PsiElement redirectElement = findRedirectElement();
-
-        return (redirectElement != null) && "<<-".equals(redirectElement.getText());
-    }
-
-    @Override
-    public boolean isValidHost() {
-        return !isEvaluatingVariables();
-    }
-
-    @Override
-    public PsiLanguageInjectionHost updateText(@NotNull String text) {
-        ASTNode valueNode = getNode().getFirstChildNode();
-        assert valueNode instanceof LeafElement;
-        ((LeafElement) valueNode).replaceWithText(text);
-        return this;
-    }
-
-    @NotNull
-    @Override
-    public LiteralTextEscaper<? extends PsiLanguageInjectionHost> createLiteralTextEscaper() {
-        return new HeredocLiteralEscaper<PsiLanguageInjectionHost>(this);
-    }
+  
+  @NotNull
+  public LiteralTextEscaper<? extends PsiLanguageInjectionHost> createLiteralTextEscaper() {
+    if (new HeredocLiteralEscaper<>(this) == null) throw new IllegalStateException(String.format("@NotNull method %s.%s must not return null", new Object[] { "com/ansorgit/plugins/bash/lang/psi/impl/heredoc/BashHereDocImpl", "createLiteralTextEscaper" }));  return (LiteralTextEscaper)new HeredocLiteralEscaper<>(this);
+  }
 }

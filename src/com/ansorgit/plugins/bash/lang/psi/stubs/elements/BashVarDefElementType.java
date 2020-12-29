@@ -1,18 +1,3 @@
-/*
- * Copyright (c) Joachim Ansorg, mail@ansorg-it.com
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.ansorgit.plugins.bash.lang.psi.stubs.elements;
 
 import com.ansorgit.plugins.bash.lang.parser.BashElementTypes;
@@ -22,55 +7,69 @@ import com.ansorgit.plugins.bash.lang.psi.impl.vars.BashVarDefImpl;
 import com.ansorgit.plugins.bash.lang.psi.stubs.api.BashVarDefStub;
 import com.ansorgit.plugins.bash.lang.psi.stubs.impl.BashVarDefStubImpl;
 import com.ansorgit.plugins.bash.lang.psi.stubs.index.BashVarDefIndex;
+import com.intellij.psi.PsiElement;
+import com.intellij.psi.stubs.IStubElementType;
 import com.intellij.psi.stubs.IndexSink;
+import com.intellij.psi.stubs.Stub;
 import com.intellij.psi.stubs.StubElement;
 import com.intellij.psi.stubs.StubInputStream;
 import com.intellij.psi.stubs.StubOutputStream;
 import com.intellij.util.io.StringRef;
+import java.io.IOException;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.IOException;
 
-/**
- * @author jansorg
- */
-public class BashVarDefElementType extends BashStubElementType<BashVarDefStub, BashVarDef> {
-    public BashVarDefElementType() {
-        super("var-def-element");
-    }
 
-    @NotNull
-    @Override
-    public String getExternalId() {
-        return "bash.varDef";
-    }
 
-    public void serialize(@NotNull BashVarDefStub stub, @NotNull StubOutputStream dataStream) throws IOException {
-        dataStream.writeName(stub.getName());
-        dataStream.writeBoolean(stub.isReadOnly());
-    }
 
-    @NotNull
-    public BashVarDefStub deserialize(@NotNull StubInputStream dataStream, StubElement parentStub) throws IOException {
-        StringRef ref = dataStream.readName();
-        boolean readOnly = dataStream.readBoolean();
 
-        return new BashVarDefStubImpl(parentStub, ref, this, readOnly);
-    }
 
-    public BashVarDef createPsi(@NotNull BashVarDefStub stub) {
-        return new BashVarDefImpl(stub, BashElementTypes.VAR_DEF_ELEMENT);
-    }
 
-    public BashVarDefStub createStub(@NotNull BashVarDef psi, StubElement parentStub) {
-        return new BashVarDefStubImpl(parentStub, StringRef.fromString(psi.getName()), BashElementTypes.VAR_DEF_ELEMENT, psi.isReadonly());
-    }
 
-    @Override
-    public void indexStub(@NotNull BashVarDefStub stub, @NotNull IndexSink sink) {
-        final String name = stub.getName();
-        if (name != null) {
-            sink.occurrence(BashVarDefIndex.KEY, name);
-        }
-    }
+
+
+
+
+
+
+public class BashVarDefElementType
+  extends BashStubElementType<BashVarDefStub, BashVarDef>
+{
+  public BashVarDefElementType() {
+    super("var-def-element");
+  }
+
+  
+  @NotNull
+  public String getExternalId() {
+    if ("bash.varDef" == null) throw new IllegalStateException(String.format("@NotNull method %s.%s must not return null", new Object[] { "com/ansorgit/plugins/bash/lang/psi/stubs/elements/BashVarDefElementType", "getExternalId" }));  return "bash.varDef";
+  }
+  
+  public void serialize(@NotNull BashVarDefStub stub, @NotNull StubOutputStream dataStream) throws IOException {
+    if (stub == null) throw new IllegalArgumentException(String.format("Argument for @NotNull parameter '%s' of %s.%s must not be null", new Object[] { "stub", "com/ansorgit/plugins/bash/lang/psi/stubs/elements/BashVarDefElementType", "serialize" }));  if (dataStream == null) throw new IllegalArgumentException(String.format("Argument for @NotNull parameter '%s' of %s.%s must not be null", new Object[] { "dataStream", "com/ansorgit/plugins/bash/lang/psi/stubs/elements/BashVarDefElementType", "serialize" }));  dataStream.writeName(stub.getName());
+    dataStream.writeBoolean(stub.isReadOnly());
+  }
+  
+  @NotNull
+  public BashVarDefStub deserialize(@NotNull StubInputStream dataStream, StubElement parentStub) throws IOException {
+    if (dataStream == null) throw new IllegalArgumentException(String.format("Argument for @NotNull parameter '%s' of %s.%s must not be null", new Object[] { "dataStream", "com/ansorgit/plugins/bash/lang/psi/stubs/elements/BashVarDefElementType", "deserialize" }));  StringRef ref = dataStream.readName();
+    boolean readOnly = dataStream.readBoolean();
+    
+    if (new BashVarDefStubImpl(parentStub, ref, (IStubElementType)this, readOnly) == null) throw new IllegalStateException(String.format("@NotNull method %s.%s must not return null", new Object[] { "com/ansorgit/plugins/bash/lang/psi/stubs/elements/BashVarDefElementType", "deserialize" }));  return (BashVarDefStub)new BashVarDefStubImpl(parentStub, ref, (IStubElementType)this, readOnly);
+  }
+  
+  public BashVarDef createPsi(@NotNull BashVarDefStub stub) {
+    if (stub == null) throw new IllegalArgumentException(String.format("Argument for @NotNull parameter '%s' of %s.%s must not be null", new Object[] { "stub", "com/ansorgit/plugins/bash/lang/psi/stubs/elements/BashVarDefElementType", "createPsi" }));  return (BashVarDef)new BashVarDefImpl(stub, BashElementTypes.VAR_DEF_ELEMENT);
+  }
+  
+  public BashVarDefStub createStub(@NotNull BashVarDef psi, StubElement parentStub) {
+    if (psi == null) throw new IllegalArgumentException(String.format("Argument for @NotNull parameter '%s' of %s.%s must not be null", new Object[] { "psi", "com/ansorgit/plugins/bash/lang/psi/stubs/elements/BashVarDefElementType", "createStub" }));  return (BashVarDefStub)new BashVarDefStubImpl(parentStub, StringRef.fromString(psi.getName()), BashElementTypes.VAR_DEF_ELEMENT, psi.isReadonly());
+  }
+
+  
+  public void indexStub(@NotNull BashVarDefStub stub, @NotNull IndexSink sink) {
+    if (stub == null) throw new IllegalArgumentException(String.format("Argument for @NotNull parameter '%s' of %s.%s must not be null", new Object[] { "stub", "com/ansorgit/plugins/bash/lang/psi/stubs/elements/BashVarDefElementType", "indexStub" }));  if (sink == null) throw new IllegalArgumentException(String.format("Argument for @NotNull parameter '%s' of %s.%s must not be null", new Object[] { "sink", "com/ansorgit/plugins/bash/lang/psi/stubs/elements/BashVarDefElementType", "indexStub" }));  String name = stub.getName();
+    if (name != null)
+      sink.occurrence(BashVarDefIndex.KEY, name); 
+  }
 }

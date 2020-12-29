@@ -1,18 +1,3 @@
-/*
- * Copyright (c) Joachim Ansorg, mail@ansorg-it.com
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.ansorgit.plugins.bash.lang.psi.impl.heredoc;
 
 import com.ansorgit.plugins.bash.lang.psi.api.heredoc.BashHereDocMarker;
@@ -26,52 +11,67 @@ import com.intellij.psi.scope.PsiScopeProcessor;
 import com.intellij.util.IncorrectOperationException;
 import org.jetbrains.annotations.NotNull;
 
-/**
- * Abstract base class for heredoc markers.
- * <br>
- * @author jansorg
- */
-abstract class AbstractHeredocMarker extends BashBaseElement implements BashHereDocMarker {
-    private HeredocMarkerReference reference;
 
-    AbstractHeredocMarker(ASTNode astNode, String name) {
-        super(astNode, name);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+abstract class AbstractHeredocMarker
+  extends BashBaseElement
+  implements BashHereDocMarker
+{
+  private HeredocMarkerReference reference;
+  
+  AbstractHeredocMarker(ASTNode astNode, String name) {
+    super(astNode, name);
+  }
+
+  
+  public boolean processDeclarations(@NotNull PsiScopeProcessor processor, @NotNull ResolveState state, PsiElement lastParent, @NotNull PsiElement place) {
+    if (processor == null) throw new IllegalArgumentException(String.format("Argument for @NotNull parameter '%s' of %s.%s must not be null", new Object[] { "processor", "com/ansorgit/plugins/bash/lang/psi/impl/heredoc/AbstractHeredocMarker", "processDeclarations" }));  if (state == null) throw new IllegalArgumentException(String.format("Argument for @NotNull parameter '%s' of %s.%s must not be null", new Object[] { "state", "com/ansorgit/plugins/bash/lang/psi/impl/heredoc/AbstractHeredocMarker", "processDeclarations" }));  if (place == null) throw new IllegalArgumentException(String.format("Argument for @NotNull parameter '%s' of %s.%s must not be null", new Object[] { "place", "com/ansorgit/plugins/bash/lang/psi/impl/heredoc/AbstractHeredocMarker", "processDeclarations" }));  return processor.execute((PsiElement)this, state);
+  }
+
+  
+  public String getName() {
+    return getMarkerText();
+  }
+
+  
+  public String getMarkerText() {
+    return HeredocSharedImpl.cleanMarker(getText(), isIgnoringTabs());
+  }
+
+  
+  public PsiElement setName(@NotNull String newElementName) throws IncorrectOperationException {
+    if (newElementName == null) throw new IllegalArgumentException(String.format("Argument for @NotNull parameter '%s' of %s.%s must not be null", new Object[] { "newElementName", "com/ansorgit/plugins/bash/lang/psi/impl/heredoc/AbstractHeredocMarker", "setName" }));  PsiReference reference = getReference();
+    return (reference != null) ? reference.handleElementRename(newElementName) : null;
+  }
+
+  
+  public PsiReference getReference() {
+    if (this.reference == null) {
+      this.reference = createReference();
     }
-
-    @Override
-    public boolean processDeclarations(@NotNull PsiScopeProcessor processor, @NotNull ResolveState state, PsiElement lastParent, @NotNull PsiElement place) {
-        return processor.execute(this, state);
-    }
-
-    @Override
-    public String getName() {
-        return getMarkerText();
-    }
-
-    @Override
-    public String getMarkerText() {
-        return HeredocSharedImpl.cleanMarker(getText(), isIgnoringTabs());
-    }
-
-    @Override
-    public PsiElement setName(@NotNull String newElementName) throws IncorrectOperationException {
-        PsiReference reference = getReference();
-        return reference != null ? reference.handleElementRename(newElementName) : null;
-    }
-
-    @Override
-    public PsiReference getReference() {
-        if (reference == null) {
-            reference = createReference();
-        }
-
-        return reference;
-    }
-
-    public abstract HeredocMarkerReference createReference();
-
-    @NotNull
-    public String getCanonicalText() {
-        return getText();
-    }
+    
+    return (PsiReference)this.reference;
+  }
+  
+  public abstract HeredocMarkerReference createReference();
+  
+  @NotNull
+  public String getCanonicalText() {
+    if (getText() == null) throw new IllegalStateException(String.format("@NotNull method %s.%s must not return null", new Object[] { "com/ansorgit/plugins/bash/lang/psi/impl/heredoc/AbstractHeredocMarker", "getCanonicalText" }));  return getText();
+  }
 }

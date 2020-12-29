@@ -1,22 +1,6 @@
-/*
- * Copyright (c) Joachim Ansorg, mail@ansorg-it.com
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.ansorgit.plugins.bash.lang.parser;
 
 import com.ansorgit.plugins.bash.lang.BashVersion;
-import com.ansorgit.plugins.bash.lang.parser.eval.BashEvalElementType;
 import com.intellij.lang.ASTNode;
 import com.intellij.lang.PsiBuilder;
 import com.intellij.lang.PsiParser;
@@ -25,44 +9,60 @@ import com.intellij.openapi.project.Project;
 import com.intellij.psi.tree.IElementType;
 import org.jetbrains.annotations.NotNull;
 
-/**
- * Consumes a stream of Bash tokens and generates a PSI tree for a Bash file.
- * <br>
- * The parsing code is split up in logical files. Each file has a descriptive name
- * which says what it does. The instances of those parsing helper classes are
- * available at Parsing.
- * <br>
- * The package builtin contains the parsing tools to parse the syntax of internal commands.
- *
- * @author jansorg, mail@ansorg-it.com
- */
-public class BashParser implements PsiParser {
-    private static final Logger log = Logger.getInstance("BashParser");
-    private static final String debugKey = "bashsupport.debug";
-    private static final boolean debugMode = "true".equals(System.getProperty(debugKey)) || "true".equals(System.getenv(debugKey));
-    private final Project project;
-    private final BashVersion version;
 
-    public BashParser(Project project, BashVersion version) {
-        this.project = project;
-        this.version = version;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+public class BashParser
+  implements PsiParser
+{
+  private static final Logger log = Logger.getInstance("BashParser");
+  private static final String debugKey = "bashsupport.debug";
+  private static final boolean debugMode = ("true".equals(System.getProperty("bashsupport.debug")) || "true".equals(System.getenv("bashsupport.debug")));
+  private final Project project;
+  private final BashVersion version;
+  
+  public BashParser(Project project, BashVersion version) {
+    this.project = project;
+    this.version = version;
+  }
+  
+  @NotNull
+  public ASTNode parse(@NotNull IElementType root, @NotNull PsiBuilder psiBuilder) {
+    if (root == null) throw new IllegalArgumentException(String.format("Argument for @NotNull parameter '%s' of %s.%s must not be null", new Object[] { "root", "com/ansorgit/plugins/bash/lang/parser/BashParser", "parse" }));  if (psiBuilder == null) throw new IllegalArgumentException(String.format("Argument for @NotNull parameter '%s' of %s.%s must not be null", new Object[] { "psiBuilder", "com/ansorgit/plugins/bash/lang/parser/BashParser", "parse" }));  BashPsiBuilder builder = new BashPsiBuilder(this.project, psiBuilder, this.version);
+    builder.putUserData(BashPsiBuilder.IN_EVAL_MODE, Boolean.valueOf(root instanceof com.ansorgit.plugins.bash.lang.parser.eval.BashEvalElementType));
+    
+    if (debugMode) {
+      log.info("Enabling parser's debug mode...");
     }
-
-    @NotNull
-    public ASTNode parse(@NotNull final IElementType root, @NotNull final PsiBuilder psiBuilder) {
-        final BashPsiBuilder builder = new BashPsiBuilder(project, psiBuilder, version);
-        builder.putUserData(BashPsiBuilder.IN_EVAL_MODE, root instanceof BashEvalElementType);
-
-        if (debugMode) {
-            log.info("Enabling parser's debug mode...");
-        }
-
-        builder.setDebugMode(debugMode);
-
-        final PsiBuilder.Marker rootMarker = builder.mark();
-        Parsing.file.parseFile(builder);
-        rootMarker.done(root);
-
-        return builder.getTreeBuilt();
-    }
+    
+    builder.setDebugMode(debugMode);
+    
+    PsiBuilder.Marker rootMarker = builder.mark();
+    Parsing.file.parseFile(builder);
+    rootMarker.done(root);
+    
+    if (builder.getTreeBuilt() == null) throw new IllegalStateException(String.format("@NotNull method %s.%s must not return null", new Object[] { "com/ansorgit/plugins/bash/lang/parser/BashParser", "parse" }));  return builder.getTreeBuilt();
+  }
 }

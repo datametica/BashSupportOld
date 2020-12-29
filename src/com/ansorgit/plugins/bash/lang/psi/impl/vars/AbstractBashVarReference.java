@@ -1,18 +1,3 @@
-/*
- * Copyright (c) Joachim Ansorg, mail@ansorg-it.com
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.ansorgit.plugins.bash.lang.psi.impl.vars;
 
 import com.ansorgit.plugins.bash.lang.psi.api.BashReference;
@@ -26,65 +11,80 @@ import com.intellij.refactoring.rename.BindablePsiReference;
 import com.intellij.util.IncorrectOperationException;
 import org.jetbrains.annotations.NotNull;
 
-/**
- * Abstract variable reference implementation to allow different implementations for smart and dumb mode.
- *
- * @author jansorg
- */
-abstract class AbstractBashVarReference extends CachingReference implements BashReference, BindablePsiReference {
-    protected final BashVarImpl bashVar;
 
-    public AbstractBashVarReference(BashVarImpl bashVar) {
-        this.bashVar = bashVar;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+abstract class AbstractBashVarReference
+  extends CachingReference
+  implements BashReference, BindablePsiReference
+{
+  protected final BashVarImpl bashVar;
+  
+  public AbstractBashVarReference(BashVarImpl bashVar) {
+    this.bashVar = bashVar;
+  }
+
+  
+  public PsiElement getElement() {
+    return (PsiElement)this.bashVar;
+  }
+
+  
+  public boolean isReferenceTo(PsiElement element) {
+    return super.isReferenceTo(element);
+  }
+
+  
+  public TextRange getRangeInElement() {
+    return this.bashVar.getNameTextRange();
+  }
+
+  
+  @NotNull
+  public String getCanonicalText() {
+    if (this.bashVar.getReferenceName() == null) throw new IllegalStateException(String.format("@NotNull method %s.%s must not return null", new Object[] { "com/ansorgit/plugins/bash/lang/psi/impl/vars/AbstractBashVarReference", "getCanonicalText" }));  return this.bashVar.getReferenceName();
+  }
+  
+  public PsiElement handleElementRename(String newName) throws IncorrectOperationException {
+    if (!BashIdentifierUtil.isValidNewVariableName(newName)) {
+      throw new IncorrectOperationException("Invalid variable name");
     }
 
-    @Override
-    public PsiElement getElement() {
-        return bashVar;
+    
+    if (this.bashVar.getPrefixLength() == 0) {
+      return BashPsiUtils.replaceElement((PsiElement)this.bashVar, BashPsiElementFactory.createVariable(this.bashVar.getProject(), newName, true));
     }
+    
+    return BashPsiUtils.replaceElement((PsiElement)this.bashVar, BashPsiElementFactory.createVariable(this.bashVar.getProject(), newName, false));
+  }
 
-    @Override
-    public boolean isReferenceTo(PsiElement element) {
-        return super.isReferenceTo(element);
-    }
+  
+  public PsiElement bindToElement(@NotNull PsiElement element) throws IncorrectOperationException {
+    if (element == null) throw new IllegalArgumentException(String.format("Argument for @NotNull parameter '%s' of %s.%s must not be null", new Object[] { "element", "com/ansorgit/plugins/bash/lang/psi/impl/vars/AbstractBashVarReference", "bindToElement" }));  return handleElementRename(element.getText());
+  }
 
-    @Override
-    public TextRange getRangeInElement() {
-        return bashVar.getNameTextRange();
-    }
+  
+  @NotNull
+  public Object[] getVariants() {
+    if (EMPTY_ARRAY == null) throw new IllegalStateException(String.format("@NotNull method %s.%s must not return null", new Object[] { "com/ansorgit/plugins/bash/lang/psi/impl/vars/AbstractBashVarReference", "getVariants" }));  return (Object[])EMPTY_ARRAY;
+  }
 
-    @NotNull
-    @Override
-    public String getCanonicalText() {
-        return bashVar.getReferenceName();
-    }
-
-    public PsiElement handleElementRename(String newName) throws IncorrectOperationException {
-        if (!BashIdentifierUtil.isValidNewVariableName(newName)) {
-            throw new IncorrectOperationException("Invalid variable name");
-        }
-
-        //if this is variable which doesn't have a $ or escaped \$ sign prefix
-        if (bashVar.getPrefixLength() == 0) {
-            return BashPsiUtils.replaceElement(bashVar, BashPsiElementFactory.createVariable(bashVar.getProject(), newName, true));
-        }
-
-        return BashPsiUtils.replaceElement(bashVar, BashPsiElementFactory.createVariable(bashVar.getProject(), newName, false));
-    }
-
-    @Override
-    public PsiElement bindToElement(@NotNull PsiElement element) throws IncorrectOperationException {
-        return handleElementRename(element.getText());
-    }
-
-    @NotNull
-    @Override
-    public Object[] getVariants() {
-        return EMPTY_ARRAY;
-    }
-
-    @Override
-    public String getReferencedName() {
-        return bashVar.getReferenceName();
-    }
+  
+  public String getReferencedName() {
+    return this.bashVar.getReferenceName();
+  }
 }

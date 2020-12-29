@@ -1,18 +1,3 @@
-/*
- * Copyright (c) Joachim Ansorg, mail@ansorg-it.com
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.ansorgit.plugins.bash.editor.inspections.inspections;
 
 import com.ansorgit.plugins.bash.lang.psi.BashVisitor;
@@ -26,83 +11,98 @@ import com.intellij.codeInspection.LocalInspectionTool;
 import com.intellij.codeInspection.ProblemsHolder;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementVisitor;
-import org.jetbrains.annotations.NotNull;
-
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.concurrent.atomic.AtomicBoolean;
+import org.jetbrains.annotations.NotNull;
 
-/**
- * Detects include file statements which reference missing files.
- *
- * @author jansorg
- */
-public class MissingIncludeFileInspection extends LocalInspectionTool {
-    @NotNull
-    @Override
-    public PsiElementVisitor buildVisitor(@NotNull final ProblemsHolder holder, boolean isOnTheFly) {
-        return new IncludeFileVisitor(holder);
-    }
 
-    private static boolean containsUnsupportedVars(PsiElement fileReference) {
-        AtomicBoolean otherVars = new AtomicBoolean(false);
-        BashPsiUtils.visitRecursively(fileReference, new BashVisitor() {
-            @Override
-            public void visitVarUse(BashVar var) {
-                if (!"HOME".equals(var.getReferenceName())) {
-                    otherVars.set(true);
-                }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+public class MissingIncludeFileInspection
+  extends LocalInspectionTool
+{
+  @NotNull
+  public PsiElementVisitor buildVisitor(@NotNull ProblemsHolder holder, boolean isOnTheFly) {
+    if (holder == null) throw new IllegalArgumentException(String.format("Argument for @NotNull parameter '%s' of %s.%s must not be null", new Object[] { "holder", "com/ansorgit/plugins/bash/editor/inspections/inspections/MissingIncludeFileInspection", "buildVisitor" }));  if (new IncludeFileVisitor(holder) == null) throw new IllegalStateException(String.format("@NotNull method %s.%s must not return null", new Object[] { "com/ansorgit/plugins/bash/editor/inspections/inspections/MissingIncludeFileInspection", "buildVisitor" }));  return (PsiElementVisitor)new IncludeFileVisitor(holder);
+  }
+  
+  private static boolean containsUnsupportedVars(PsiElement fileReference) {
+    final AtomicBoolean otherVars = new AtomicBoolean(false);
+    BashPsiUtils.visitRecursively(fileReference, new BashVisitor()
+        {
+          public void visitVarUse(BashVar var) {
+            if (!"HOME".equals(var.getReferenceName())) {
+              otherVars.set(true);
             }
+          }
         });
-
-        return otherVars.get();
+    
+    return otherVars.get();
+  }
+  
+  private static class IncludeFileVisitor extends BashVisitor {
+    private final ProblemsHolder holder;
+    
+    public IncludeFileVisitor(ProblemsHolder holder) {
+      this.holder = holder;
     }
 
-    private static class IncludeFileVisitor extends BashVisitor {
-        private final ProblemsHolder holder;
-
-        public IncludeFileVisitor(ProblemsHolder holder) {
-            this.holder = holder;
+    
+    public void visitIncludeCommand(BashIncludeCommand bashCommand) {
+      BashFileReference fileReference = bashCommand.getFileReference();
+      if (fileReference == null || fileReference.findReferencedFile() != null) {
+        return;
+      }
+      
+      String filename = fileReference.getFilename();
+      if (fileReference.isDynamic() || BashFiles.containsSupportedPlaceholders(filename)) {
+        if (!BashProjectSettings.storedSettings(this.holder.getProject()).isValidateWithCurrentEnv()) {
+          return;
         }
 
-        @Override
-        public void visitIncludeCommand(BashIncludeCommand bashCommand) {
-            BashFileReference fileReference = bashCommand.getFileReference();
-            if (fileReference == null || fileReference.findReferencedFile() != null) {
-                return;
-            }
 
-            String filename = fileReference.getFilename();
-            if (fileReference.isDynamic() || BashFiles.containsSupportedPlaceholders(filename)) {
-                if (!BashProjectSettings.storedSettings(holder.getProject()).isValidateWithCurrentEnv()) {
-                    // don't validate with current environment variables -> quit early if the filename contains variables
-                    return;
-                }
-
-                // we can't handle other vars than $HOME for now.
-                if (containsUnsupportedVars(fileReference)) {
-                    return;
-                }
-            }
-
-            filename = BashFiles.replaceHomePlaceholders(filename);
-
-            //check if it's an existing absolute file
-            try {
-                Path path = Paths.get(filename);
-                boolean absoluteAndExists = path.isAbsolute() && Files.exists(path);
-
-                if (!absoluteAndExists) {
-                    holder.registerProblem(fileReference, String.format("The file '%s' does not exist.", filename));
-                } else if (Files.isDirectory(path)) {
-                    //print an error message if the given path is a directory
-                    holder.registerProblem(fileReference, "Unable to include a directory.");
-                }
-            } catch (InvalidPathException e) {
-                holder.registerProblem(fileReference, String.format("Unable to parse file reference '%s'", filename));
-            }
+        
+        if (MissingIncludeFileInspection.containsUnsupportedVars((PsiElement)fileReference)) {
+          return;
         }
+      } 
+      
+      filename = BashFiles.replaceHomePlaceholders(filename);
+
+      
+      try {
+        Path path = Paths.get(filename, new String[0]);
+        boolean absoluteAndExists = (path.isAbsolute() && Files.exists(path, new java.nio.file.LinkOption[0]));
+        
+        if (!absoluteAndExists) {
+          this.holder.registerProblem((PsiElement)fileReference, String.format("The file '%s' does not exist.", new Object[] { filename }), new com.intellij.codeInspection.LocalQuickFix[0]);
+        } else if (Files.isDirectory(path, new java.nio.file.LinkOption[0])) {
+          
+          this.holder.registerProblem((PsiElement)fileReference, "Unable to include a directory.", new com.intellij.codeInspection.LocalQuickFix[0]);
+        } 
+      } catch (InvalidPathException e) {
+        this.holder.registerProblem((PsiElement)fileReference, String.format("Unable to parse file reference '%s'", new Object[] { filename }), new com.intellij.codeInspection.LocalQuickFix[0]);
+      } 
     }
+  }
 }

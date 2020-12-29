@@ -1,18 +1,3 @@
-/*
- * Copyright (c) Joachim Ansorg, mail@ansorg-it.com
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.ansorgit.plugins.bash.lang.psi.stubs.elements;
 
 import com.ansorgit.plugins.bash.lang.parser.BashElementTypes;
@@ -22,53 +7,67 @@ import com.ansorgit.plugins.bash.lang.psi.impl.function.BashFunctionDefImpl;
 import com.ansorgit.plugins.bash.lang.psi.stubs.api.BashFunctionDefStub;
 import com.ansorgit.plugins.bash.lang.psi.stubs.impl.BashFunctionDefStubImpl;
 import com.ansorgit.plugins.bash.lang.psi.stubs.index.BashFunctionNameIndex;
+import com.intellij.psi.PsiElement;
+import com.intellij.psi.stubs.IStubElementType;
 import com.intellij.psi.stubs.IndexSink;
+import com.intellij.psi.stubs.Stub;
 import com.intellij.psi.stubs.StubElement;
 import com.intellij.psi.stubs.StubInputStream;
 import com.intellij.psi.stubs.StubOutputStream;
 import com.intellij.util.io.StringRef;
+import java.io.IOException;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.IOException;
 
-/**
- * @author ilyas
- */
-public class BashFunctionDefElementType extends BashStubElementType<BashFunctionDefStub, BashFunctionDef> {
 
-    public BashFunctionDefElementType() {
-        super("function-def-element");
-    }
 
-    @NotNull
-    @Override
-    public String getExternalId() {
-        return "bash.functionDef";
-    }
 
-    public void serialize(@NotNull BashFunctionDefStub stub, @NotNull StubOutputStream dataStream) throws IOException {
-        dataStream.writeName(stub.getName());
-    }
 
-    @NotNull
-    public BashFunctionDefStub deserialize(@NotNull StubInputStream dataStream, StubElement parentStub) throws IOException {
-        StringRef ref = dataStream.readName();
-        return new BashFunctionDefStubImpl(parentStub, ref, this);
-    }
 
-    public BashFunctionDef createPsi(@NotNull BashFunctionDefStub stub) {
-        return new BashFunctionDefImpl(stub, BashElementTypes.FUNCTION_DEF_COMMAND);
-    }
 
-    public BashFunctionDefStub createStub(@NotNull BashFunctionDef psi, StubElement parentStub) {
-        return new BashFunctionDefStubImpl(parentStub, StringRef.fromString(psi.getName()), BashElementTypes.FUNCTION_DEF_COMMAND);
-    }
 
-    @Override
-    public void indexStub(@NotNull BashFunctionDefStub stub, @NotNull IndexSink sink) {
-        final String name = stub.getName();
-        if (name != null) {
-            sink.occurrence(BashFunctionNameIndex.KEY, name);
-        }
-    }
+
+
+
+
+
+
+
+public class BashFunctionDefElementType
+  extends BashStubElementType<BashFunctionDefStub, BashFunctionDef>
+{
+  public BashFunctionDefElementType() {
+    super("function-def-element");
+  }
+
+  
+  @NotNull
+  public String getExternalId() {
+    if ("bash.functionDef" == null) throw new IllegalStateException(String.format("@NotNull method %s.%s must not return null", new Object[] { "com/ansorgit/plugins/bash/lang/psi/stubs/elements/BashFunctionDefElementType", "getExternalId" }));  return "bash.functionDef";
+  }
+  
+  public void serialize(@NotNull BashFunctionDefStub stub, @NotNull StubOutputStream dataStream) throws IOException {
+    if (stub == null) throw new IllegalArgumentException(String.format("Argument for @NotNull parameter '%s' of %s.%s must not be null", new Object[] { "stub", "com/ansorgit/plugins/bash/lang/psi/stubs/elements/BashFunctionDefElementType", "serialize" }));  if (dataStream == null) throw new IllegalArgumentException(String.format("Argument for @NotNull parameter '%s' of %s.%s must not be null", new Object[] { "dataStream", "com/ansorgit/plugins/bash/lang/psi/stubs/elements/BashFunctionDefElementType", "serialize" }));  dataStream.writeName(stub.getName());
+  }
+  
+  @NotNull
+  public BashFunctionDefStub deserialize(@NotNull StubInputStream dataStream, StubElement parentStub) throws IOException {
+    if (dataStream == null) throw new IllegalArgumentException(String.format("Argument for @NotNull parameter '%s' of %s.%s must not be null", new Object[] { "dataStream", "com/ansorgit/plugins/bash/lang/psi/stubs/elements/BashFunctionDefElementType", "deserialize" }));  StringRef ref = dataStream.readName();
+    if (new BashFunctionDefStubImpl(parentStub, ref, (IStubElementType)this) == null) throw new IllegalStateException(String.format("@NotNull method %s.%s must not return null", new Object[] { "com/ansorgit/plugins/bash/lang/psi/stubs/elements/BashFunctionDefElementType", "deserialize" }));  return (BashFunctionDefStub)new BashFunctionDefStubImpl(parentStub, ref, (IStubElementType)this);
+  }
+  
+  public BashFunctionDef createPsi(@NotNull BashFunctionDefStub stub) {
+    if (stub == null) throw new IllegalArgumentException(String.format("Argument for @NotNull parameter '%s' of %s.%s must not be null", new Object[] { "stub", "com/ansorgit/plugins/bash/lang/psi/stubs/elements/BashFunctionDefElementType", "createPsi" }));  return (BashFunctionDef)new BashFunctionDefImpl(stub, BashElementTypes.FUNCTION_DEF_COMMAND);
+  }
+  
+  public BashFunctionDefStub createStub(@NotNull BashFunctionDef psi, StubElement parentStub) {
+    if (psi == null) throw new IllegalArgumentException(String.format("Argument for @NotNull parameter '%s' of %s.%s must not be null", new Object[] { "psi", "com/ansorgit/plugins/bash/lang/psi/stubs/elements/BashFunctionDefElementType", "createStub" }));  return (BashFunctionDefStub)new BashFunctionDefStubImpl(parentStub, StringRef.fromString(psi.getName()), BashElementTypes.FUNCTION_DEF_COMMAND);
+  }
+
+  
+  public void indexStub(@NotNull BashFunctionDefStub stub, @NotNull IndexSink sink) {
+    if (stub == null) throw new IllegalArgumentException(String.format("Argument for @NotNull parameter '%s' of %s.%s must not be null", new Object[] { "stub", "com/ansorgit/plugins/bash/lang/psi/stubs/elements/BashFunctionDefElementType", "indexStub" }));  if (sink == null) throw new IllegalArgumentException(String.format("Argument for @NotNull parameter '%s' of %s.%s must not be null", new Object[] { "sink", "com/ansorgit/plugins/bash/lang/psi/stubs/elements/BashFunctionDefElementType", "indexStub" }));  String name = stub.getName();
+    if (name != null)
+      sink.occurrence(BashFunctionNameIndex.KEY, name); 
+  }
 }

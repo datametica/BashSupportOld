@@ -1,18 +1,3 @@
-/*
- * Copyright (c) Joachim Ansorg, mail@ansorg-it.com
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.ansorgit.plugins.bash.lang.psi.stubs.api;
 
 import com.ansorgit.plugins.bash.lang.psi.api.function.BashFunctionDef;
@@ -20,15 +5,30 @@ import com.intellij.psi.stubs.NamedStub;
 import com.intellij.util.ArrayFactory;
 import org.jetbrains.annotations.NotNull;
 
-/**
- * @author jansorg
- */
-public interface BashFunctionDefStub extends NamedStub<BashFunctionDef> {
-    ArrayFactory<BashFunctionDef> ARRAY_FACTORY = new ArrayFactory<BashFunctionDef>() {
-        @NotNull
-        @Override
-        public BashFunctionDef[] create(int count) {
-            return new BashFunctionDef[count];
-        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+public interface BashFunctionDefStub
+  extends NamedStub<BashFunctionDef>
+{
+  public static final ArrayFactory<BashFunctionDef> ARRAY_FACTORY = new ArrayFactory<BashFunctionDef>()
+    {
+      @NotNull
+      public BashFunctionDef[] create(int count) {
+        if (new BashFunctionDef[count] == null) throw new IllegalStateException(String.format("@NotNull method %s.%s must not return null", new Object[] { "com/ansorgit/plugins/bash/lang/psi/stubs/api/BashFunctionDefStub$1", "create" }));  return new BashFunctionDef[count];
+      }
     };
 }

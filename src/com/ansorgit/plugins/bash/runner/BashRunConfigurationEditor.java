@@ -1,55 +1,55 @@
-/*
- * Copyright (c) Joachim Ansorg, mail@ansorg-it.com
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.ansorgit.plugins.bash.runner;
 
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.options.SettingsEditor;
+import javax.swing.JComponent;
 import org.jetbrains.annotations.NotNull;
 
-import javax.swing.*;
 
-class BashRunConfigurationEditor extends SettingsEditor<BashRunConfiguration> {
-    private BashConfigForm form;
 
-    BashRunConfigurationEditor(Module module) {
-        this.form = new BashConfigForm();
-        this.form.setModuleContext(module);
-    }
 
-    @Override
-    protected void resetEditorFrom(BashRunConfiguration runConfiguration) {
-        form.reset(runConfiguration);
-        form.resetFormTo(runConfiguration);
-    }
 
-    @Override
-    protected void applyEditorTo(BashRunConfiguration runConfiguration) throws ConfigurationException {
-        form.applyTo(runConfiguration);
-        form.applySettingsTo(runConfiguration);
-    }
 
-    @Override
-    @NotNull
-    protected JComponent createEditor() {
-        return form;
-    }
 
-    @Override
-    protected void disposeEditor() {
-        form = null;
-    }
+
+
+
+
+
+
+
+
+class BashRunConfigurationEditor
+  extends SettingsEditor<BashRunConfiguration>
+{
+  private BashConfigForm form;
+  
+  BashRunConfigurationEditor(Module module) {
+    this.form = new BashConfigForm();
+    this.form.setModuleContext(module);
+  }
+
+  
+  protected void resetEditorFrom(BashRunConfiguration runConfiguration) {
+    this.form.reset(runConfiguration);
+    this.form.resetFormTo(runConfiguration);
+  }
+
+  
+  protected void applyEditorTo(BashRunConfiguration runConfiguration) throws ConfigurationException {
+    this.form.applyTo(runConfiguration);
+    this.form.applySettingsTo(runConfiguration);
+  }
+
+  
+  @NotNull
+  protected JComponent createEditor() {
+    if (this.form == null) throw new IllegalStateException(String.format("@NotNull method %s.%s must not return null", new Object[] { "com/ansorgit/plugins/bash/runner/BashRunConfigurationEditor", "createEditor" }));  return (JComponent)this.form;
+  }
+
+  
+  protected void disposeEditor() {
+    this.form = null;
+  }
 }
