@@ -10,6 +10,28 @@ plugins {
     id "org.jetbrains.intellij" version "0.4.8"
 }
 
+version = "1.1"
+//create a single Jar with all dependencies
+/*task fatJar(type: Jar) {
+    manifest {
+        attributes 'Implementation-Title': 'Gradle Jar for BashParser',
+                'Implementation-Version': version
+    }
+    baseName = 'BashSupport'
+    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+    with jar
+}*/
+
+/*task shadowJar {
+    archiveFileName = 'bash.jar'
+}*/
+
+
+/*task buildJar(type: GradleBuild) {
+    buildFile = "/Users/apple/IdeaProjects/BashSupportCallModule/build.gradle"
+    tasks = ['shadowJar']
+}*/
+
 repositories {
     maven { url 'http://dl.bintray.com/jetbrains/intellij-plugin-service' }
 
@@ -123,3 +145,5 @@ task addPsiViewer {
     }
 }
 prepareSandbox.finalizedBy addPsiViewer
+
+//tasks.assemble.dependsOn('buildJar')
