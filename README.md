@@ -1,4 +1,5 @@
-**This repository has been archived as it was forked from individual developer's branch. Future changes would be made in repository [datametica/BashSupport](https://github.com/datametica/BashSupport)
+## NOTE
+**This repository has been archived as it was forked from individual developer's branch. Future changes would be made in repository [datametica/BashSupport](https://github.com/datametica/BashSupport)**
 
 [![Build Status](https://travis-ci.org/jansorg/BashSupport.svg?branch=idea-162.x)](https://travis-ci.org/jansorg/BashSupport)
 
